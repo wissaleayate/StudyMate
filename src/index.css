@@ -1,0 +1,352 @@
+@import "tailwindcss";
+
+/* ──────────────────────────────────────────
+   LearnQuest – Global Design Tokens
+   Dark space / pixel-RPG aesthetic
+────────────────────────────────────────── */
+@layer base {
+  :root {
+    /* Brand palette */
+    --amber:      #f5a623;
+    --amber-dark: #d4851a;
+    --orange:     #e5643c;
+    --orange-dark:#c44b26;
+    --teal:       #2dd4bf;
+    --teal-dark:  #14b8a6;
+    --green:      #22c55e;
+    --red:        #ef4444;
+
+    /* Backgrounds */
+    --bg-space:   #0b0c1a;
+    --bg-panel:   rgba(15, 16, 35, 0.92);
+    --bg-input:   rgba(255, 255, 255, 0.06);
+    --bg-overlay: rgba(0, 0, 0, 0.55);
+
+    /* Borders */
+    --border-dim: rgba(255,255,255,0.12);
+    --border-glow:rgba(245,166,35,0.6);
+
+    /* Text */
+    --text-base:  #c8c9d8;
+    --text-bright:#f0f1ff;
+    --text-muted: #7b7c99;
+
+    /* Shadows */
+    --shadow-amber: 0 0 20px rgba(245,166,35,0.35);
+    --shadow-teal:  0 0 20px rgba(45,212,191,0.35);
+    --shadow-panel: 0 8px 40px rgba(0,0,0,0.6);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body, #root {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    background: var(--bg-space);
+    color: var(--text-base);
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    overflow: auto;
+  }
+}
+
+/* ── Pixel / Press-Start font-face (Google Fonts CDN) ── */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600&display=swap');
+
+/* ── Utility classes ── */
+@layer utilities {
+  .font-pixel   { font-family: 'Press Start 2P', monospace; }
+  .font-orb     { font-family: 'Orbitron', sans-serif; }
+  .font-inter   { font-family: 'Inter', sans-serif; }
+
+  .text-amber   { color: var(--amber); }
+  .text-teal    { color: var(--teal); }
+  .text-bright  { color: var(--text-bright); }
+  .text-muted   { color: var(--text-muted); }
+
+  .bg-space     { background: var(--bg-space); }
+  .bg-panel     { background: var(--bg-panel); }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar        { width: 6px; }
+  ::-webkit-scrollbar-track  { background: transparent; }
+  ::-webkit-scrollbar-thumb  { background: var(--border-dim); border-radius: 4px; }
+}
+
+/* ── Star-field background ── */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.4); }
+}
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  animation: twinkle var(--dur, 3s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+/* ── Pixel scanline overlay ── */
+.scanlines::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
+  );
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ── Amber glow button ── */
+.btn-amber {
+  background: linear-gradient(135deg, var(--amber), var(--amber-dark));
+  color: #1a0f00;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 4px 0 var(--amber-dark), var(--shadow-amber);
+  position: relative;
+  top: 0;
+}
+.btn-amber:hover {
+  box-shadow: 0 6px 0 var(--amber-dark), 0 0 30px rgba(245,166,35,0.55);
+  transform: translateY(-1px);
+}
+.btn-amber:active {
+  top: 4px;
+  box-shadow: 0 0 0 var(--amber-dark), var(--shadow-amber);
+  transform: translateY(0);
+}
+
+/* ── Orange glow button ── */
+.btn-orange {
+  background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+  color: #fff;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  border: none;
+  border-radius: 4px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.2s;
+  box-shadow: 0 4px 0 var(--orange-dark), 0 0 20px rgba(229,100,60,0.35);
+  position: relative;
+  top: 0;
+}
+.btn-orange:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 0 var(--orange-dark), 0 0 30px rgba(229,100,60,0.55);
+}
+.btn-orange:active {
+  top: 4px;
+  box-shadow: 0 0 0 var(--orange-dark);
+  transform: translateY(0);
+}
+
+/* ── Ghost / outline button ── */
+.btn-ghost {
+  background: transparent;
+  color: var(--teal);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--teal);
+  border-radius: 4px;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-ghost:hover {
+  background: rgba(45,212,191,0.12);
+  box-shadow: var(--shadow-teal);
+}
+
+/* ── RPG Input ── */
+.rpg-input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-dim);
+  border-radius: 4px;
+  color: var(--text-bright);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.rpg-input:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 2px rgba(245,166,35,0.2);
+}
+.rpg-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ── Panel ── */
+.rpg-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-dim);
+  border-radius: 8px;
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-panel);
+}
+
+/* ── Node states ── */
+.map-node-completed .node-ring { stroke: var(--green); }
+.map-node-active    .node-ring { stroke: var(--amber); }
+.map-node-locked    .node-ring { stroke: #4b5563; }
+.map-node-locked    { opacity: 0.65; }
+
+/* ── Animated path glow (opacity pulse, works on solid lines) ── */
+@keyframes path-glow {
+  0%, 100% { stroke-opacity: 0.75; }
+  50%       { stroke-opacity: 1; }
+}
+.path-active {
+  animation: path-glow 2s ease-in-out infinite;
+}
+
+/* ── XP bar fill ── */
+@keyframes xp-fill {
+  from { width: 0%; }
+}
+.xp-bar-fill {
+  animation: xp-fill 1.2s ease-out forwards;
+}
+
+/* ── Float animation for mascot ── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+.mascot-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ── Glow pulse for active node (uses stroke-opacity, SVG-safe) ── */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.3; r: 36; }
+  50%       { opacity: 0.7; r: 42; }
+}
+.node-glow-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+/* ── Screen shake ── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+.shake { animation: shake 0.4s ease; }
+
+/* ── Fade in ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in {
+  animation: fadeIn 0.35s ease forwards;
+}
+
+/* ── Avatar selection ── */
+.avatar-option {
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.avatar-option:hover       { transform: scale(1.1); }
+.avatar-option.selected    { border-color: var(--amber); box-shadow: 0 0 12px rgba(245,166,35,0.5); }
+
+/* ── Quest node tooltip ── */
+.node-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(11,12,26,0.95);
+  border: 1px solid var(--border-dim);
+  border-radius: 6px;
+  padding: 8px 12px;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  color: var(--text-bright);
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: var(--shadow-panel);
+}
+.node-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--border-dim);
+}
+
+/* ── Responsive map overrides ── */
+
+/* On mobile: NodePanel takes full width from the bottom */
+@media (max-width: 640px) {
+  /* Node panel becomes a bottom drawer on mobile */
+  aside[aria-label="Node information panel"] {
+    width: 100% !important;
+    height: 65vh !important;
+    top: auto !important;
+    bottom: 0 !important;
+    right: 0 !important;
+    border-left: none !important;
+    border-top: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 16px 16px 0 0 !important;
+    transform: translateY(0) !important;
+  }
+  /* When hidden: slide down */
+  aside[aria-label="Node information panel"][style*="translateX(100%)"] {
+    transform: translateY(100%) !important;
+  }
+}
+
+/* Prevent horizontal overflow */
+#app-root, #app-root * {
+  max-width: 100vw;
+}
+
+/* Focus ring for keyboard navigation */
+svg [role="button"]:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 4px;
+  border-radius: 50%;
+}
+
+/* Smooth SVG rendering */
+svg {
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+}
+

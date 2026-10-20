@@ -1,0 +1,110 @@
+// ── Central data source for all map nodes ─────────────────────────────────────
+// Edit this file to add, remove, or reorder concepts without touching UI code.
+// Node positions are expressed as percentages of the SVG canvas (0–100).
+
+export const MAP_NODES = [
+  {
+    id: 'intro',
+    label: 'Intro',
+    type: 'learn',
+    status: 'completed',
+    // position on SVG canvas (percent)
+    x: 63,
+    y: 74,
+    xp: 50,
+    prereqs: [],
+    desc: 'Welcome to the quest. Learn the fundamentals and set out on your journey.',
+    questions: [
+      { q: 'What is the main goal of this course?', a: 'To master the subject through active learning.' },
+      { q: 'How do you unlock new regions?', a: 'By completing nodes in order.' },
+    ],
+  },
+  {
+    id: 'learn',
+    label: 'Learn',
+    type: 'learn',
+    status: 'completed',
+    x: 28,
+    y: 66,
+    xp: 75,
+    prereqs: ['intro'],
+    desc: 'Study the core concepts. Build a solid foundation before advancing.',
+    questions: [
+      { q: 'Name a core concept from this lesson.', a: 'Varies by subject.' },
+    ],
+  },
+  {
+    id: 'homework',
+    label: 'Homework',
+    type: 'homework',
+    status: 'available',
+    x: 73,
+    y: 53,
+    xp: 100,
+    prereqs: ['intro'],
+    desc: 'Apply what you have learned. Complete the exercises to reinforce your knowledge.',
+    questions: [],
+  },
+  {
+    id: 'quiz',
+    label: 'Quiz',
+    type: 'quiz',
+    status: 'completed',
+    x: 48,
+    y: 44,
+    xp: 150,
+    prereqs: ['learn', 'homework'],
+    desc: 'Test your understanding. Answer all questions correctly to proceed to the objectives.',
+    questions: [
+      { q: 'Which node connects Learn and Homework?', a: 'Quiz' },
+    ],
+  },
+  {
+    id: 'obj1',
+    label: 'New Objective',
+    type: 'objective',
+    status: 'completed',
+    x: 26,
+    y: 28,
+    xp: 120,
+    prereqs: ['quiz'],
+    desc: 'Explore advanced territory. Unlock the highland region of knowledge.',
+    questions: [],
+  },
+  {
+    id: 'obj2',
+    label: 'New Objective',
+    type: 'objective',
+    status: 'active',
+    x: 42,
+    y: 16,
+    xp: 200,
+    prereqs: ['quiz', 'obj1'],
+    desc: 'The summit awaits. This is your current objective — push forward and claim your reward.',
+    questions: [],
+  },
+  {
+    id: 'obj3',
+    label: 'New Objective',
+    type: 'objective',
+    status: 'locked',
+    x: 78,
+    y: 20,
+    xp: 250,
+    prereqs: ['obj2'],
+    desc: 'Hidden knowledge awaits the worthy. Complete the previous objective to unlock this region.',
+    questions: [],
+  },
+]
+
+// Directed edges — defines the learning path order
+export const MAP_EDGES = [
+  { from: 'intro',    to: 'learn'    },
+  { from: 'intro',    to: 'homework' },
+  { from: 'learn',    to: 'quiz'     },
+  { from: 'homework', to: 'quiz'     },
+  { from: 'quiz',     to: 'obj1'     },
+  { from: 'quiz',     to: 'obj2'     },
+  { from: 'obj1',     to: 'obj2'     },
+  { from: 'obj2',     to: 'obj3'     },
+]
