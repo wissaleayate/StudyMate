@@ -2,33 +2,7 @@
 import { useState } from 'react'
 import StarField from './StarField'
 import Mascot from './Mascot'
-
-// ── Avatar choices (pixel-art SVG mini-characters) ──
-const AVATARS = [
-  { id: 'warrior',  label: 'Warrior',  colors: ['#e5643c', '#f5a623'] },
-  { id: 'mage',     label: 'Mage',     colors: ['#8b5cf6', '#2dd4bf'] },
-  { id: 'archer',   label: 'Archer',   colors: ['#22c55e', '#f5a623'] },
-  { id: 'scholar',  label: 'Scholar',  colors: ['#3b82f6', '#f0f1ff'] },
-  { id: 'rogue',    label: 'Rogue',    colors: ['#6b7280', '#e5643c'] },
-  { id: 'paladin',  label: 'Paladin',  colors: ['#f5a623', '#fff']    },
-]
-
-function AvatarSVG({ colors, size = 44 }) {
-  const [head, body] = colors
-  return (
-    <svg width={size} height={size} viewBox="0 0 44 44">
-      <rect x="14" y="4"  width="16" height="14" rx="4" fill={head} />
-      <rect x="16" y="8"  width="4"  height="4"  rx="1" fill="#fff" opacity="0.85" />
-      <rect x="24" y="8"  width="4"  height="4"  rx="1" fill="#fff" opacity="0.85" />
-      <rect x="16" y="15" width="12" height="2"  rx="1" fill="#fff" opacity="0.6" />
-      <rect x="11" y="19" width="22" height="16" rx="3" fill={body} />
-      <rect x="4"  y="20" width="6"  height="12" rx="3" fill={body} opacity="0.85" />
-      <rect x="34" y="20" width="6"  height="12" rx="3" fill={body} opacity="0.85" />
-      <rect x="15" y="35" width="6"  height="8"  rx="2" fill={body} opacity="0.9" />
-      <rect x="23" y="35" width="6"  height="8"  rx="2" fill={body} opacity="0.9" />
-    </svg>
-  )
-}
+import { AVATARS, getAvatar } from '../data/avatarData'
 
 // ── Icon-labelled input ──
 function RpgInput({ id, label, type = 'text', value, onChange, icon, placeholder }) {
@@ -119,10 +93,17 @@ function RegisterScreen({ onBack, onSuccess }) {
 
       <div className="rpg-panel scanlines w-full max-w-sm p-6 flex flex-col gap-5">
         {/* Avatar header icon */}
-        <div className="flex justify-center">
-          <div className="w-12 h-12 rounded-full bg-[var(--bg-input)] border border-[var(--border-dim)] flex items-center justify-center">
-            <AvatarSVG colors={AVATARS.find(a => a.id === avatar)?.colors ?? ['#f5a623','#e5643c']} size={36} />
+        <div className="flex flex-col items-center justify-center gap-1.5">
+          <div className="w-14 h-14 rounded-2xl bg-slate-900 border-2 border-amber shadow-[0_0_15px_rgba(245,166,35,0.4)] flex items-center justify-center overflow-hidden">
+            <img
+              src={getAvatar(avatar).image}
+              alt={getAvatar(avatar).label}
+              className="w-full h-full object-cover"
+            />
           </div>
+          <span className="font-pixel text-[8.5px] text-amber">
+            {getAvatar(avatar).label} • {getAvatar(avatar).title}
+          </span>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -133,19 +114,27 @@ function RegisterScreen({ onBack, onSuccess }) {
           {/* Avatar grid */}
           <div className="flex flex-col gap-2">
             <span className="font-pixel text-[0.5rem] text-amber tracking-widest uppercase">
-              Student Avatars
+              Select Character Avatar
             </span>
             <div className="grid grid-cols-6 gap-2">
-              {AVATARS.map(av => (
+              {AVATARS.map((av) => (
                 <button
                   key={av.id}
                   type="button"
                   id={`avatar-${av.id}`}
                   onClick={() => setAvatar(av.id)}
-                  className={`avatar-option w-10 h-10 flex items-center justify-center bg-[var(--bg-input)] hover:bg-[var(--bg-panel)] ${avatar === av.id ? 'selected' : ''}`}
-                  title={av.label}
+                  className={`avatar-option w-11 h-11 rounded-xl overflow-hidden border-2 transition-all p-0.5 ${
+                    avatar === av.id
+                      ? 'border-amber shadow-[0_0_12px_rgba(245,166,35,0.7)] scale-105 ring-1 ring-amber'
+                      : 'border-slate-700/80 hover:border-slate-500 opacity-75'
+                  }`}
+                  title={`${av.label} — ${av.title}`}
                 >
-                  <AvatarSVG colors={av.colors} size={30} />
+                  <img
+                    src={av.image}
+                    alt={av.label}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
                 </button>
               ))}
             </div>
@@ -285,10 +274,10 @@ function LogoBlock() {
   return (
     <div className="flex flex-col items-center gap-2">
       <div className="flex items-center gap-3">
-        <Mascot size={44} />
+        <Mascot size={46} avatarId="paladin" />
         <h1 className="font-pixel text-2xl sm:text-3xl leading-none tracking-wider"
             style={{ color: '#f5a623', textShadow: '0 0 20px rgba(245,166,35,0.5), 3px 3px 0 rgba(180,100,0,0.8)' }}>
-          LearnQuest
+          StudyMate
         </h1>
       </div>
       <p className="font-pixel text-[0.45rem] tracking-[0.25em] text-[var(--text-muted)] uppercase mt-1">

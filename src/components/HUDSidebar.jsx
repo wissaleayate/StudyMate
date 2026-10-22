@@ -1,7 +1,7 @@
 // HUD Sidebar — player stats panel (slides in from the right)
 import { useState } from 'react'
-import Mascot from './Mascot'
-import { MAP_NODES } from '../data/nodeData'
+import { INITIAL_NODES } from '../data/nodesData'
+import { CharacterAvatar } from './common/CharacterAvatar'
 
 function StatBar({ label, value, max, color }) {
   return (
@@ -13,7 +13,7 @@ function StatBar({ label, value, max, color }) {
       <div className="h-2 rounded-full bg-[var(--bg-input)] border border-[var(--border-dim)] overflow-hidden">
         <div
           className="h-full rounded-full xp-bar-fill"
-          style={{ width: `${(value/max)*100}%`, background: color }}
+          style={{ width: `${Math.min((value/max)*100, 100)}%`, background: color }}
         />
       </div>
     </div>
@@ -23,21 +23,20 @@ function StatBar({ label, value, max, color }) {
 export default function HUDSidebar({ user, onLogout }) {
   const [open, setOpen] = useState(false)
 
-  const completed  = MAP_NODES.filter(n => n.status === 'completed').length
-  const totalXP    = MAP_NODES.filter(n => n.status === 'completed').reduce((sum, n) => sum + n.xp, 0)
-  const level      = Math.floor(totalXP / 200) + 1
-  const nextLvlXP  = level * 200
-  const progress   = totalXP % 200
+  // Read live nodes state if available
+  const savedNodes = (() => {
+    try {
+      const saved = localStorage.getItem('studymate_nodes_state')
+      return saved ? JSON.parse(saved) : INITIAL_NODES
+    } catch {
+      return INITIAL_NODES
+    }
+  })()
 
-  const avatarColors = {
-    warrior: ['#e5643c', '#f5a623'],
-    mage:    ['#8b5cf6', '#2dd4bf'],
-    archer:  ['#22c55e', '#f5a623'],
-    scholar: ['#3b82f6', '#f0f1ff'],
-    rogue:   ['#6b7280', '#e5643c'],
-    paladin: ['#f5a623', '#fff'],
-  }
-  const colors = avatarColors[user?.avatar] ?? ['#f5a623', '#e5643c']
+  const completed = savedNodes.filter(n => n.status === 'mastered').length
+  const totalXP = user?.xp ?? savedNodes.filter(n => n.status === 'mastered').reduce((sum, n) => sum + n.xp, 0)
+  const level = Math.floor(totalXP / 200) + 1
+  const progress = totalXP % 200
 
   return (
     <>
@@ -45,8 +44,9 @@ export default function HUDSidebar({ user, onLogout }) {
       <button
         id="btn-toggle-hud"
         onClick={() => setOpen(o => !o)}
-        className="fixed top-14 right-4 z-30 w-10 h-10 rounded-full bg-[var(--bg-panel)] border border-[var(--border-dim)] flex items-center justify-center text-amber hover:border-amber transition-colors shadow-lg"
-        title="Player stats"
+        className="fixed top-16 right-4 z-30 w-10 h-10 rounded-full bg-slate-900/90 border border-slate-700 flex items-center justify-center text-amber hover:border-amber transition-colors shadow-xl backdrop-blur-md"
+        title="Player profile & stats"
+        aria-label="Toggle Player Profile"
       >
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <circle cx="9" cy="6" r="3.5" stroke="currentColor" strokeWidth="1.5" />
@@ -56,64 +56,78 @@ export default function HUDSidebar({ user, onLogout }) {
 
       {/* Panel */}
       <aside
-        className={`fixed top-0 right-0 h-full z-40 w-72 rpg-panel scanlines flex flex-col gap-4 p-5 transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 h-full z-50 w-72 rpg-panel scanlines flex flex-col gap-4 p-5 transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}
         style={{ borderLeft: '1px solid var(--border-dim)' }}
+        aria-label="Player Stats Drawer"
       >
         <div className="flex items-center justify-between">
-          <span className="font-pixel text-[0.6rem] text-amber">PLAYER STATS</span>
-          <button id="btn-close-hud" onClick={() => setOpen(false)} className="text-[var(--text-muted)] hover:text-red-400 text-xs">✕</button>
+          <span className="font-pixel text-[0.6rem] text-amber">PLAYER PROFILE</span>
+          <button
+            id="btn-close-hud"
+            onClick={() => setOpen(false)}
+            className="text-[var(--text-muted)] hover:text-red-400 text-xs p-1"
+            aria-label="Close Profile"
+          >
+            ✕
+          </button>
         </div>
 
         {/* Avatar + name */}
         <div className="flex flex-col items-center gap-2 py-3 border-y border-[var(--border-dim)]">
-          <div className="w-16 h-16 rounded-full bg-[var(--bg-input)] border-2 border-amber flex items-center justify-center"
-               style={{ boxShadow: 'var(--shadow-amber)' }}>
-            <svg width="48" height="48" viewBox="0 0 44 44">
-              <rect x="14" y="4" width="16" height="14" rx="4" fill={colors[0]} />
-              <rect x="16" y="8" width="4"  height="4"  rx="1" fill="#fff" opacity="0.85" />
-              <rect x="24" y="8" width="4"  height="4"  rx="1" fill="#fff" opacity="0.85" />
-              <rect x="16" y="15" width="12" height="2"  rx="1" fill="#fff" opacity="0.6" />
-              <rect x="11" y="19" width="22" height="16" rx="3" fill={colors[1]} />
-              <rect x="4"  y="20" width="6"  height="12" rx="3" fill={colors[1]} opacity="0.85" />
-              <rect x="34" y="20" width="6"  height="12" rx="3" fill={colors[1]} opacity="0.85" />
-              <rect x="15" y="35" width="6"  height="8"  rx="2" fill={colors[1]} opacity="0.9" />
-              <rect x="23" y="35" width="6"  height="8"  rx="2" fill={colors[1]} opacity="0.9" />
-            </svg>
-          </div>
+          <CharacterAvatar
+            avatarId={user?.avatar}
+            size={64}
+            className="rounded-2xl"
+          />
           <div className="text-center">
             <p className="font-pixel text-[0.65rem] text-[var(--text-bright)]">{user?.username ?? 'Adventurer'}</p>
-            <p className="font-pixel text-[0.45rem] text-amber mt-1">LEVEL {level} SCHOLAR</p>
+            <p className="font-pixel text-[0.45rem] text-amber mt-1">LEVEL {level} EXPLORER</p>
           </div>
         </div>
 
         {/* Stats */}
         <div className="flex flex-col gap-3">
           <StatBar label="Experience" value={progress} max={200} color="#f5a623" />
-          <StatBar label="Quests"     value={completed}  max={MAP_NODES.length} color="#2dd4bf" />
-          <StatBar label="Mastery"    value={Math.round(completed/MAP_NODES.length*100)} max={100} color="#8b5cf6" />
+          <StatBar label="Objectives" value={completed} max={savedNodes.length} color="#2dd4bf" />
+          <StatBar label="Realm Mastery" value={Math.round((completed / savedNodes.length) * 100)} max={100} color="#8b5cf6" />
         </div>
 
         {/* Achievement badges */}
         <div className="flex flex-col gap-2">
-          <span className="font-pixel text-[0.45rem] text-[var(--text-muted)]">ACHIEVEMENTS</span>
+          <span className="font-pixel text-[0.45rem] text-[var(--text-muted)]">REALM BADGES</span>
           <div className="flex gap-2 flex-wrap">
-            {completed >= 1 && <Badge icon="⭐" label="First Quest" />}
-            {completed >= 3 && <Badge icon="🔥" label="On Fire" />}
-            {completed >= 5 && <Badge icon="🏆" label="Champion" />}
-            {completed === 0 && <span className="font-inter text-xs text-[var(--text-muted)]">Complete quests to earn badges!</span>}
+            {completed >= 1 && <Badge icon="⭐" label="Europe Pioneer" />}
+            {completed >= 3 && <Badge icon="🔥" label="Ecosystem Guru" />}
+            {completed >= 4 && <Badge icon="🛡️" label="Checkpoint Passed" />}
+            {completed >= 6 && <Badge icon="👑" label="Summit Conqueror" />}
+            {completed >= 7 && <Badge icon="🏆" label="Grandmaster" />}
+            {completed === 0 && <span className="font-inter text-xs text-[var(--text-muted)]">Complete objectives to earn badges!</span>}
           </div>
         </div>
 
-        <div className="mt-auto">
+        <div className="mt-auto flex flex-col gap-2">
+          <button
+            id="btn-reset-progress"
+            onClick={() => {
+              if (window.confirm('Reset realm objective progress to initial state?')) {
+                localStorage.removeItem('studymate_nodes_state')
+                localStorage.removeItem('studymate_connections_state')
+                window.location.reload()
+              }
+            }}
+            className="text-[9px] text-slate-500 hover:text-slate-300 font-pixel py-1 underline"
+          >
+            RESET MAP DATA
+          </button>
           <button id="btn-logout" onClick={onLogout} className="btn-ghost w-full text-[0.5rem]">
-            LOGOUT
+            LOGOUT TO TITLE
           </button>
         </div>
       </aside>
 
       {/* Overlay when open */}
       {open && (
-        <div className="fixed inset-0 z-35 bg-black/30" onClick={() => setOpen(false)} aria-hidden="true" />
+        <div className="fixed inset-0 z-45 bg-black/40 backdrop-blur-sm" onClick={() => setOpen(false)} aria-hidden="true" />
       )}
     </>
   )
@@ -121,9 +135,9 @@ export default function HUDSidebar({ user, onLogout }) {
 
 function Badge({ icon, label }) {
   return (
-    <div className="flex items-center gap-1 bg-[var(--bg-input)] border border-[var(--border-dim)] rounded px-2 py-1" title={label}>
+    <div className="flex items-center gap-1.5 bg-[var(--bg-input)] border border-[var(--border-dim)] rounded-md px-2 py-1 shadow-sm" title={label}>
       <span className="text-sm">{icon}</span>
-      <span className="font-pixel text-[0.38rem] text-[var(--text-muted)]">{label}</span>
+      <span className="font-pixel text-[0.38rem] text-[var(--text-bright)]">{label}</span>
     </div>
   )
 }

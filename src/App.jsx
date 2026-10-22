@@ -1,32 +1,32 @@
-// StudyMate – LearnQuest root application
-import { useState, useEffect } from 'react'
+// StudyMate root application
+import { useState } from 'react'
 import AuthScreens from './components/AuthScreens'
-import WorldMap    from './components/WorldMap'
-import HUDSidebar  from './components/HUDSidebar'
-import StarField   from './components/StarField'
+import { AppShell } from './components/shell/AppShell'
+import { StudyProvider } from './context/StudyContext'
 import './index.css'
 
 export default function App() {
-  const [user, setUser] = useState(null)
-  const [view, setView] = useState('auth') // 'auth' | 'map'
-
-  // Restore session on mount
-  useEffect(() => {
+  const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('lq_current_user')
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        setUser(parsed)
-        setView('map')
-      }
+      return saved ? JSON.parse(saved) : null
     } catch {
-      // ignore
+      return null
     }
-  }, [])
+  })
+
+  const [view, setView] = useState(() => {
+    try {
+      const saved = localStorage.getItem('lq_current_user')
+      return saved ? 'app' : 'auth'
+    } catch {
+      return 'auth'
+    }
+  })
 
   function handleAuthenticated(userData) {
     setUser(userData)
-    setView('map')
+    setView('app')
   }
 
   function handleLogout() {
@@ -41,14 +41,10 @@ export default function App() {
         <AuthScreens onAuthenticated={handleAuthenticated} />
       )}
 
-      {view === 'map' && (
-        <>
-          <StarField count={60} />
-          <div className="relative w-full h-full z-10">
-            <WorldMap user={user} />
-            <HUDSidebar user={user} onLogout={handleLogout} />
-          </div>
-        </>
+      {view === 'app' && (
+        <StudyProvider initialUser={user} onLogout={handleLogout}>
+          <AppShell />
+        </StudyProvider>
       )}
     </div>
   )

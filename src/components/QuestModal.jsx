@@ -15,7 +15,7 @@ const STATUS_LABELS = {
   locked:    { text: '🔒 LOCKED',    color: '#6b7280' },
 }
 
-export default function QuestModal({ node, onClose, user }) {
+export default function QuestModal({ node, onClose }) {
   const [started, setStarted] = useState(false)
   const typeInfo   = TYPE_LABELS[node.type]   ?? TYPE_LABELS.objective
   const statusInfo = STATUS_LABELS[node.status] ?? STATUS_LABELS.locked
